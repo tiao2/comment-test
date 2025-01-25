@@ -1,0 +1,11 @@
+to setup;<script>(n=>{n.onclick=()=>{document.getElementsByClassName('cm-line')[2].innerText=document.getElementById('ipt').value;setTimeout(()=>{document.getElementsByClassName('command-send')[0].click();},10);document.getElementById('ipt').value='';document.getElementById('ipt').style.display='none';document.getElementById('sm').style.display='none';document.getElementById('ci').style.display='block';};n.style='position:fixed;top:35%;left:80%;height:5%;width:20%;border:1px\x20solid\x20black;overflow:auto;z-index:11;background-color:green;color:white;display:none';n.id='sm';n.innerHTML='完成';document.body.appendChild(n);})(document.createElement('button'))</script>
+end
+
+to go;<script>(m=>{m.style='position:fixed;top:0.01%;left:0%;height:39.99%;width:100%;border:1px\x20solid\x20black;overflow:auto;z-index:10;background-color:smokewhite;display:none';m.id='ipt';document.body.appendChild(m);})(document.createElement('textarea'))</script>
+end
+
+to icon;<script>(n=>{n.onclick=()=>{document.getElementById('ipt').style.display='block';document.getElementById('sm').style.display='block';document.getElementById('ci').style.display='none';};n.style='position:fixed;top:70%;left:80%;height:5%;width:10%;border:none;overflow:auto;z-index:11;background-color:black;color:white';n.id='ci';n.innerHTML='Console';document.body.appendChild(n);})(document.createElement('button'))</script>
+end
+
+to addlink;<script>setInterval(()=>{if(document.getElementsByClassName('enter').length<2){(m=>{m.className='enter';m.innerHTML='<a\x20href="javascript:void(0)">隐藏<strong>多行控制台</strong>图标</a>';document.getElementsByClassName('options')[0].appendChild(m);})(document.createElement('li'));document.getElementsByClassName('enter')[1].addEventListener('click',function(){if(document.getElementsByClassName('enter')[1].innerText[0]='隐'){document.getElementById('ipt').value='';document.getElementById('ipt').style.display='none';document.getElementById('sm').style.display='none';document.getElementById('ci').style.display='none';document.getElementsByClassName('enter')[1].innerHTML='<a\x20href="javascript:void(0)">显示<strong>多行控制台</strong>图标</a>';}else{document.getElementById('ci').style.display='block';document.getElementsByClassName('enter')[1].innerHTML='<a\x20href="javascript:void(0)">隐藏<strong>多行控制台</strong>图标</a>';};});};},10);</script>
+end
