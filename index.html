@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GitHub Issue Comment</title>
+    <style>
+        /* 基础样式 */
+        .container { max-width: 600px; margin: 2rem auto; padding: 1rem; }
+        .hidden { display: none; }
+        textarea { width: 100%; height: 100px; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 登录按钮 -->
+        <button id="loginBtn" onclick="loginWithGitHub()">Login with GitHub</button>
+        
+        <!-- 评论表单（默认隐藏） -->
+        <div id="commentForm" class="hidden">
+            <textarea id="commentInput" placeholder="Enter your comment..."></textarea>
+            <button onclick="submitComment()">Submit Comment</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
