@@ -18,12 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function loginWithGitHub() {
     const redirectUri = encodeURIComponent(window.location.href);
     const scope = encodeURIComponent('public_repo');
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}`;
+    // 添加 response_type=token
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}&response_type=token`;
     window.location.href = authUrl;
 }
 
 // 从 URL 中提取 Access Token
 function getAccessTokenFromUrl() {
+    // 从 hash 中提取（格式如 #access_token=xxx&scope=...）
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     return params.get('access_token');
