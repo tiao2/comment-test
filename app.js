@@ -1,5 +1,5 @@
 // 配置项（需替换为你的信息）
-const CLIENT_ID = 'YOUR_CLIENT_ID';          // 替换为你的 OAuth App Client ID
+const CLIENT_ID = 'Ov23liJfdCXIjcPtQm2t';          // 替换为你的 OAuth App Client ID
 const REPO_OWNER = 'tiao2';          // 仓库所有者
 const REPO_NAME = 'comment-test';               // 仓库名称
 const ISSUE_NUMBER = 1;                      // 目标 Issue 编号
