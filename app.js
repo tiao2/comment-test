@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 修改登录函数
 function login() {
     // 直接跳转 GitHub 授权页面（不再使用弹窗）
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=${encodeURIComponent('http://tiao2.ct.ws/oauth.php')}`;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=Ov23liJfdCXIjcPtQm2t&redirect_uri=${encodeURIComponent('http://tiao2.ct.ws/oauth.php')}`;
 }
 
 // 加载帖子列表
