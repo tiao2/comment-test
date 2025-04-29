@@ -1,13 +1,45 @@
 const REPO_OWNER = 'tiao2';
 const REPO_NAME = 'comment-test';
+// 在文件开头添加 URL 参数解析函数
+function parseTokenFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('access_token');
+    const error = params.get('error');
 
-// 初始化检查登录状态
+    // 清除 URL 参数（避免泄露）
+    if (token || error) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // 处理 token
+    if (token) {
+        localStorage.setItem('gh_token', token);
+        toggleLoginState(true);
+        loadPosts();
+    }
+
+    // 处理错误
+    if (error) {
+        const msg = params.get('msg') || '授权流程失败';
+        alert(`错误: ${msg}`);
+    }
+}
+
+// 修改初始化逻辑
 document.addEventListener('DOMContentLoaded', () => {
+    parseTokenFromURL(); // 新增：优先处理 URL 中的 token
+    // 原有逻辑
     if (localStorage.getItem('gh_token')) {
         toggleLoginState(true);
+        loadPosts();
     }
-    loadPosts();
 });
+
+// 修改登录函数
+function login() {
+    // 直接跳转 GitHub 授权页面（不再使用弹窗）
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=${encodeURIComponent('http://tiao2.ct.ws/oauth.php')}`;
+}
 
 // 加载帖子列表
 async function loadPosts() {
@@ -62,23 +94,6 @@ async function showDetail(issueId) {
         console.error('加载详情失败:', err);
     }
 }
-
-// 登录/登出逻辑
-function login() {
-    const authWindow = window.open(
-        `https://github.com/login/oauth/authorize?client_id=Ov23liJfdCXIjcPtQm2t&redirect_uri=${encodeURIComponent('http://tiao2.ct.ws/oauth.php')}`,
-        'auth',
-        'width=500,height=600'
-    );
-}
-
-window.addEventListener('message', (e) => {
-    if (e.data.type === 'oauth') {
-        localStorage.setItem('gh_token', e.data.token);
-        toggleLoginState(true);
-        loadPosts();
-    }
-});
 
 function logout() {
     localStorage.removeItem('gh_token');
