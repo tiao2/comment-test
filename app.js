@@ -66,7 +66,7 @@ async function showDetail(issueId) {
 // 登录/登出逻辑
 function login() {
     const authWindow = window.open(
-        `https://github.com/login/oauth/authorize?client_id=你的ClientID&redirect_uri=${encodeURIComponent('tiao2.ct.ws/oauth.php')}`,
+        `https://github.com/login/oauth/authorize?client_id=Ov23liJfdCXIjcPtQm2t&redirect_uri=${encodeURIComponent('tiao2.ct.ws/oauth.php')}`,
         'auth',
         'width=500,height=600'
     );
