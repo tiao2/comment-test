@@ -4,6 +4,23 @@ const REPO_NAME = 'comment-test';
 window.onerror = (msg, url, line, col, error) => {
     console.error('全局错误捕获:', { msg, url, line, col, error });
 };
+
+// 在文件开头定义函数（确保全局可用）
+function safeMarkdown(text) {
+  try {
+    // 检查 marked 库是否加载
+    if (typeof marked?.parse !== 'function') {
+      console.warn('Markdown 解析库未加载，显示原始内容');
+      return text || '';
+    }
+    // 安全解析并返回
+    return marked.parse(text);
+  } catch (err) {
+    console.error('Markdown 解析失败:', err);
+    return text || '';
+  }
+}
+
 // 在文件开头添加 URL 参数解析函数
 function parseTokenFromURL() {
     const params = new URLSearchParams(window.location.search);
