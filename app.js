@@ -81,20 +81,62 @@ async function loadPosts() {
     }
 }
 
-// 新增独立渲染函数
+// 修改 loadPosts 函数中的渲染逻辑
 function renderPosts(posts) {
     let html = '<h2>最新帖子</h2>';
+    
     posts.forEach(post => {
-        if (!post.title || !post.body) return; // 跳过无效数据
+        // 安全访问嵌套属性
+        const title = post.title || '无标题';
+        const body = post.body?.substring(0, 100) || '内容为空';
+        const author = post.user?.login || '匿名用户';
+
         html += `
             <div class="post" onclick="showDetail(${post.number})">
-                <h3>${post.title}</h3>
-                <p>${post.body.substring(0, 100)}...</p>
-                <small>作者: ${post.user?.login || '未知'}</small>
+                <h3>${title}</h3>
+                <p>${body}...</p>
+                <small>作者: ${author}</small>
             </div>
         `;
     });
+    
     document.getElementById('posts').innerHTML = html;
+}
+
+async function showDetail(issueId) {
+    try {
+        const [post, comments] = await Promise.all([
+            fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}`)
+                .then(res => res.json())
+                .catch(() => ({})), // 防止请求失败导致崩溃
+            
+            fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}/comments`)
+                .then(res => res.json())
+                .catch(() => []) 
+        ]);
+
+        // 安全渲染逻辑
+        document.getElementById('detailTitle').textContent = post.title || '未知标题';
+        document.getElementById('detailBody').innerHTML = 
+            post.body ? safeMarkdown(post.body) : '<em>内容为空</em>';
+        
+        // 渲染评论
+        let commentsHtml = '';
+        if (Array.isArray(comments)) {
+            comments.forEach(comment => {
+                const content = comment.body ? safeMarkdown(comment.body) : '评论内容为空';
+                commentsHtml += `
+                    <div class="comment">
+                        <strong>${comment.user?.login || '匿名用户'}</strong>
+                        <p>${content}</p>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById('comments').innerHTML = commentsHtml;
+    } catch (err) {
+        showError(`加载详情失败: ${err.message}`);
+    }
 }
 
 // 新增错误提示函数
@@ -105,41 +147,7 @@ function showError(msg) {
     setTimeout(() => errorDiv.style.display = 'none', 5000);
 }
 
-// 显示帖子详情
-async function showDetail(issueId) {
-    try {
-        const [post, comments] = await Promise.all([
-            fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}`).then(res => res.json()),
-            fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}/comments`).then(res => res.json())
-        ]);
 
-        // 验证数据有效性
-        if (!post.title || !post.body) {
-            throw new Error('帖子数据不完整');
-        }
-
-        // 安全渲染 Markdown
-        document.getElementById('detailTitle').textContent = post.title;
-        document.getElementById('detailBody').innerHTML = 
-            typeof marked.parse === 'function' ? marked.parse(post.body) : post.body;
-
-        // 渲染评论（同样需要验证）
-        let commentsHtml = '';
-        if (Array.isArray(comments)) {
-            comments.forEach(comment => {
-                commentsHtml += `
-                    <div class="comment">
-                        <strong>${comment.user?.login || '匿名'}</strong>
-                        <p>${typeof marked.parse === 'function' ? marked.parse(comment.body) : comment.body}</p>
-                    </div>
-                `;
-            });
-        }
-        document.getElementById('comments').innerHTML = commentsHtml;
-    } catch (err) {
-        showError(`加载详情失败: ${err.message}`);
-    }
-}
 
 function logout() {
     localStorage.removeItem('gh_token');
@@ -198,4 +206,11 @@ async function submitComment() {
     } catch (err) {
         alert('评论失败: ' + err.message);
     }
+}
+
+// 在文件末尾添加以下函数
+function hideDetail() {
+    document.getElementById('postDetail').style.display = 'none';
+    document.getElementById('posts').style.display = 'block';
+    loadPosts(); // 重新加载确保数据最新
 }
