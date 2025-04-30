@@ -26,7 +26,8 @@
 
     <!-- 帖子详情容器（动态加载） -->
     <div id="postDetail" style="display:none;">
-        <button onclick="hideDetail()">返回列表</button>
+       <!-- 修改返回按钮的事件绑定 -->
+        <button onclick="window.hideDetail()">返回列表</button> 
         <h2 id="detailTitle"></h2>
         <div id="detailBody"></div>
         <h3>评论</h3>
