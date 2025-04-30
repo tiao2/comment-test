@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="errorAlert" style="display: none; color: red;"></div>
     <header>
         <h1>GitHub 社区</h1>
         <button id="loginBtn" onclick="login()">用 GitHub 登录</button>
@@ -33,7 +34,7 @@
         <textarea id="newComment" placeholder="写下评论..."></textarea>
         <button onclick="submitComment()">提交评论</button>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
