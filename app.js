@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 修改登录函数
 function login() {
     // 直接跳转 GitHub 授权页面（不再使用弹窗）
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=Ov23liJfdCXIjcPtQm2t&redirect_uri=${encodeURIComponent('http://tiao2.ct.ws/oauth.php')}`;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=Ov23liJfdCXIjcPtQm2t&redirect_uri=${encodeURIComponent('http://tiao2.ct.ws/oauth.php')}&scope=repo`;
 }
 
 // 加载帖子列表
@@ -122,40 +122,50 @@ function renderPosts(posts) {
 
 async function showDetail(issueId) {
     try {
-        const [post, comments] = await Promise.all([
-            fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}`)
-                .then(res => res.json())
-                .catch(() => ({})), // 防止请求失败导致崩溃
-            
+        // 保存当前帖子ID到全局变量（用于后续提交）
+        window.currentIssueId = issueId;
+
+        // 并行获取帖子和评论
+        const [postRes, commentsRes] = await Promise.all([
+            fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}`),
             fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}/comments`)
-                .then(res => res.json())
-                .catch(() => []) 
         ]);
 
-        // 安全渲染逻辑
-        document.getElementById('detailTitle').textContent = post.title || '未知标题';
-        document.getElementById('detailBody').innerHTML = 
-            post.body ? safeMarkdown(post.body) : '<em>内容为空</em>';
-        
-        // 渲染评论
-        let commentsHtml = '';
-        if (Array.isArray(comments)) {
-            comments.forEach(comment => {
-                const content = comment.body ? safeMarkdown(comment.body) : '评论内容为空';
-                commentsHtml += `
-                    <div class="comment">
-                        <strong>${comment.user?.login || '匿名用户'}</strong>
-                        <p>${content}</p>
-                    </div>
-                `;
-            });
+        // 统一处理响应状态
+        if (!postRes.ok || !commentsRes.ok) {
+            throw new Error(`请求失败: ${postRes.status} / ${commentsRes.status}`);
         }
-        document.getElementById('comments').innerHTML = commentsHtml;
+
+        // 解析数据
+        const post = await postRes.json();
+        const comments = await commentsRes.json();
+
+        // 安全渲染逻辑
+        document.getElementById('detailTitle').textContent = post.title || '未知帖子';
+        document.getElementById('detailBody').innerHTML = safeMarkdown(post.body);
+        
+        // 渲染评论（处理空数据）
+        const commentsContainer = document.getElementById('comments');
+        if (comments.length === 0) {
+            commentsContainer.innerHTML = '<div class="empty">暂无评论</div>';
+        } else {
+            commentsContainer.innerHTML = comments.map(comment => `
+                <div class="comment">
+                    <strong>${comment.user?.login || '匿名用户'}</strong>
+                    <p>${safeMarkdown(comment.body)}</p>
+                    <small>${new Date(comment.created_at).toLocaleString()}</small>
+                </div>
+            `).join('');
+        }
+
+        // 切换视图
+        document.getElementById('posts').style.display = 'none';
+        document.getElementById('postDetail').style.display = 'block';
     } catch (err) {
-        showError(`加载详情失败: ${err.message}`);
+        console.error('加载详情失败:', err);
+        alert(`加载失败: ${err.message}`);
     }
 }
-
 // 新增错误提示函数
 function showError(msg) {
     const errorDiv = document.getElementById('errorAlert');
@@ -204,24 +214,47 @@ async function createPost() {
 // 提交评论
 async function submitComment() {
     const token = localStorage.getItem('gh_token');
-    const issueId = document.querySelector('#postDetail h2').id.replace('detail-', '');
-    
+    if (!token) {
+        alert('请先登录！');
+        return;
+    }
+
+    const commentText = document.getElementById('newComment').value.trim();
+    if (!commentText) {
+        alert('评论内容不能为空');
+        return;
+    }
+
     try {
-        await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}/comments`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                body: document.getElementById('newComment').value
-            })
-        });
-        
+        // 使用保存的全局ID
+        const issueId = window.currentIssueId;
+        if (!issueId) throw new Error('未找到当前帖子ID');
+
+        // 提交评论
+        const res = await fetch(
+            `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueId}/comments`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({ body: commentText })
+            }
+        );
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || '评论提交失败');
+        }
+
+        // 清空输入并刷新评论
         document.getElementById('newComment').value = '';
-        showDetail(issueId); // 刷新评论
+        await showDetail(issueId); // 重新加载最新评论
     } catch (err) {
-        alert('评论失败: ' + err.message);
+        console.error('提交评论失败:', err);
+        alert(`提交失败: ${err.message}`);
     }
 }
 
