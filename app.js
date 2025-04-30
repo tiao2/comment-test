@@ -111,7 +111,7 @@ function renderPosts(posts) {
         html += `
             <div class="post" onclick="showDetail(${post.number})">
                 <h3>${title}</h3>
-                <p>${body}...</p>
+                <p>${safeMarkdown(body)}...</p>
                 <small>作者: ${author}</small>
             </div>
         `;
